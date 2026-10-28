@@ -1,0 +1,31 @@
+// Deux copies du serveur : la 2e doit passer en relais et joindre l'extension via la 1re
+import fs from 'node:fs';
+import path from 'node:path';
+import { WebSocket } from 'ws';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+const DIR = process.argv[2];
+const mk = async () => { const c = new Client({ name: 't', version: '1' }); await c.connect(new StdioClientTransport({ command: 'node', args: [new URL('../index.js', import.meta.url).pathname], env: { ...process.env, OUTBOUND_MCP_DIR: DIR }, stderr: 'pipe' })); return c; };
+const call = async (c, name, args = {}) => { const r = await c.callTool({ name, arguments: args }); return r.content[0].text.replace(/\s+/g, ' '); };
+const a = await mk(); await new Promise(r => setTimeout(r, 300));
+const b = await mk(); await new Promise(r => setTimeout(r, 600));
+const { token, port } = JSON.parse(fs.readFileSync(path.join(DIR, 'config.json'), 'utf8'));
+// une page web ne doit pas pouvoir se faire passer pour un relais
+await new Promise(r => { const w = new WebSocket(`ws://127.0.0.1:${port}`, { origin: 'https://evil.com' }); w.on('error', () => { console.log('page web refusée: ok'); r(); }); w.on('open', () => { console.log('ERREUR'); r(); }); });
+console.log('B sans extension ->', await call(b, 'linkedin_status'));
+const ext = new WebSocket(`ws://127.0.0.1:${port}`, { origin: 'chrome-extension://abc' });
+await new Promise(r => ext.on('open', r));
+ext.send(JSON.stringify({ type: 'hello', token, version: 'x' }));
+ext.on('message', (raw) => { const m = JSON.parse(raw); if (m.id) ext.send(JSON.stringify({ id: m.id, ok: true, result: { tool: m.tool, me: 'Julien' } })); });
+await new Promise(r => setTimeout(r, 200));
+console.log('A ->', await call(a, 'linkedin_get_profile', { profile: 'x' }));
+console.log('B via relais ->', await call(b, 'linkedin_get_profile', { profile: 'y' }));
+console.log('B status ->', await call(b, 'linkedin_status'));
+await a.close(); await new Promise(r => setTimeout(r, 2500));
+const ext2 = new WebSocket(`ws://127.0.0.1:${port}`, { origin: 'chrome-extension://abc' });
+await new Promise(r => { ext2.on('open', r); ext2.on('error', () => { console.log('ext2 erreur'); r(); }); });
+ext2.send(JSON.stringify({ type: 'hello', token }));
+ext2.on('message', (raw) => { const m = JSON.parse(raw); if (m.id) ext2.send(JSON.stringify({ id: m.id, ok: true, result: { ok: 'B est devenu primaire' } })); });
+await new Promise(r => setTimeout(r, 200));
+console.log('A fermé, B reprend ->', await call(b, 'linkedin_get_profile', { profile: 'z' }));
+process.exit(0);

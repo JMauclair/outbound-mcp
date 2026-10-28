@@ -1,0 +1,22 @@
+{
+  "name": "outbound-mcp-server",
+  "version": "0.1.0",
+  "description": "Serveur MCP local qui relie Claude a l'extension Outbound MCP",
+  "main": "index.js",
+  "scripts": {
+    "test": "node tests/e2e-test.mjs /tmp/outbound-mcp-test && node tests/relay-test.mjs /tmp/outbound-relay",
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "ws": "^8.22.0",
+    "zod": "^4.6.7"
+  },
+  "bin": {
+    "outbound-mcp": "index.js"
+  }
+}

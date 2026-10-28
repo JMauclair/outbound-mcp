@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Outbound MCP",
+  "version": "0.1.0",
+  "description": "Pilote ta prospection LinkedIn depuis Claude, avec ta propre session. Quotas et délais humains intégrés.",
+  "permissions": ["storage", "scripting", "tabs", "alarms", "webRequest"],
+  "host_permissions": ["https://www.linkedin.com/*"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Outbound MCP",
+    "default_popup": "popup.html"
+  }
+}

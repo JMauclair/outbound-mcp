@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Outbound MCP</title>
+  <style>
+    :root { --ink:#16181d; --muted:#6b7280; --line:#e5e7eb; --ok:#1a7f37; --warn:#b45309; --bad:#b91c1c; --bg:#fff; }
+    * { box-sizing: border-box; }
+    body { margin:0; width:360px; font:13px/1.4 -apple-system, system-ui, sans-serif; color:var(--ink); background:var(--bg); }
+    header { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:1px solid var(--line); }
+    h1 { font-size:14px; margin:0; }
+    .pill { font-size:11px; padding:2px 8px; border-radius:99px; background:#f3f4f6; color:var(--muted); }
+    .pill.ok { background:#dcfce7; color:var(--ok); }
+    .pill.bad { background:#fee2e2; color:var(--bad); }
+    section { padding:10px 14px; border-bottom:1px solid var(--line); }
+    h2 { font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin:0 0 8px; }
+    .row { display:flex; gap:6px; align-items:center; }
+    input[type=text], input[type=number] { flex:1; padding:6px 8px; border:1px solid var(--line); border-radius:6px; font:inherit; min-width:0; }
+    input[type=number] { width:56px; flex:none; }
+    button { padding:6px 10px; border:1px solid var(--line); border-radius:6px; background:#fff; font:inherit; cursor:pointer; }
+    button.primary { background:var(--ink); color:#fff; border-color:var(--ink); }
+    button.danger { background:var(--bad); color:#fff; border-color:var(--bad); }
+    table { width:100%; border-collapse:collapse; }
+    td { padding:3px 0; }
+    td.n { text-align:right; color:var(--muted); white-space:nowrap; }
+    .hint { color:var(--muted); font-size:11px; margin-top:6px; }
+    .err { color:var(--bad); font-size:11px; margin-top:6px; }
+    ul { list-style:none; padding:0; margin:0; max-height:150px; overflow:auto; }
+    li { padding:4px 0; border-bottom:1px dashed var(--line); font-size:12px; }
+    li .t { color:var(--muted); margin-right:6px; }
+    li .ko { color:var(--bad); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Outbound MCP</h1>
+    <span id="state" class="pill">...</span>
+  </header>
+
+  <section>
+    <h2>Connexion à Claude</h2>
+    <div class="row">
+      <input id="token" type="text" placeholder="Jeton du serveur MCP" autocomplete="off">
+      <button id="saveToken" class="primary">OK</button>
+    </div>
+    <div id="lastError" class="err"></div>
+    <div class="hint">Le jeton est dans ~/.outbound-mcp/config.json</div>
+  </section>
+
+  <section>
+    <h2>Sécurité</h2>
+    <div class="row">
+      <button id="pause" class="danger">Pause</button>
+      <span id="pauseLabel" class="hint" style="margin:0"></span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Aujourd'hui / limites</h2>
+    <table>
+      <tr><td>Invitations (jour)</td><td class="n"><span id="u_invite_day"></span> / <input id="l_invite_day" type="number" min="0"></td></tr>
+      <tr><td>Invitations (7 jours)</td><td class="n"><span id="u_invite_week"></span> / <input id="l_invite_week" type="number" min="0"></td></tr>
+      <tr><td>Messages (jour)</td><td class="n"><span id="u_message_day"></span> / <input id="l_message_day" type="number" min="0"></td></tr>
+      <tr><td>Profils consultés (jour)</td><td class="n"><span id="u_profile_view_day"></span> / <input id="l_profile_view_day" type="number" min="0"></td></tr>
+      <tr><td>Lectures API (jour)</td><td class="n"><span id="u_read_day"></span> / <input id="l_read_day" type="number" min="0"></td></tr>
+    </table>
+    <div class="row" style="margin-top:8px"><button id="saveLimits">Enregistrer les limites</button></div>
+    <div id="hardMax" class="hint"></div>
+  </section>
+
+  <section>
+    <h2>Mode capture (endpoints Voyager)</h2>
+    <div class="row">
+      <button id="capture">Démarrer</button>
+      <button id="copyCapture">Copier (<span id="capCount">0</span>)</button>
+      <button id="clearCapture">Vider</button>
+    </div>
+    <div class="hint">Active, fais l'action à la main sur linkedin.com, puis copie les requêtes capturées.</div>
+  </section>
+
+  <section>
+    <h2>Journal</h2>
+    <ul id="log"></ul>
+  </section>
+
+  <script src="popup.js"></script>
+</body>
+</html>
